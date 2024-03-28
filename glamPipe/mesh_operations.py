@@ -2,7 +2,6 @@ import numpy as np
 import trimesh
 from scipy.ndimage import binary_dilation
 from skimage.measure import marching_cubes
-import os
 import logging
 from glamPipe import io_tools
 
@@ -39,24 +38,17 @@ def post_process_mesh(vertices, faces):
     return mesh
 
 
-def save_mesh(mesh, output_dir, i_path, i_patch, mesh_size_micron):
-    filepath = os.path.join(output_dir, 'meshes', f'{i_path}_{i_patch}_{mesh_size_micron}micron.stl')
-    mesh.export(filepath)
+def run_mesh_creation():
+    paths = io_tools.get_probability_processed_image_paths()
 
+    for i_p, p in enumerate(paths):
 
-def run_mesh_creation(output_dir_path):
-    # This function needs work! Missing funcs.
-    paths = io_tools.get_segmenation_file_paths()
+        filename = p.split('/')[-1].split('.')[0]
 
-    for i_path, path in enumerate(paths):
-
-        sub_str = 'xxx'
-        thr = 'xxx'
-
-        im = io_tools.read_image(path)
-        binary = io_tools.read_image(path)
+        im = io_tools.read_image(p)
+        binary, thr = io_tools.get_binary_image(filename)
 
         vertices, faces = make_mesh(im, thr, binary)
         mesh = post_process_mesh(vertices, faces)
 
-        io_tools.save_mesh(output_dir_path, sub_str, mesh)
+        io_tools.save_mesh(mesh, filename)

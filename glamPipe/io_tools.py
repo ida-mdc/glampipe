@@ -51,20 +51,19 @@ def get_original_image_paths(dir_path, condition):
     return all_image_paths
 
 
-def save_paths_to_txt(paths, output_dir):
-    with open(os.path.join(output_dir, 'images_paths.txt'), 'w') as f:
-        for ip, p in enumerate(paths):
-            f.write(f'{ip}, {p}\n')
+def get_probability_processed_image_paths():
+    all_image_paths = glob(os.path.join(OUTPUT_PATH_PROBABILITY_PROCESSED, '*.tif'))
+    return all_image_paths
 
 
-def read_image(p, mesh_size_in_pixels_pre_interpolation):
+def read_image(p, mesh_pixel_size_pre_interpolation=None):
     im = tif.imread(p)
     logging.info(f'Image shape {im.shape}')
     if im.ndim != 3:
         logging.warning('Expected a 3D image. Skipping.')
         return False
-    elif np.any(im.shape < mesh_size_in_pixels_pre_interpolation):
-        logging.warning(f'Image is smaller than needed mesh print size - {mesh_size_in_pixels_pre_interpolation}')
+    elif (mesh_pixel_size_pre_interpolation is not None) and np.any(im.shape < mesh_pixel_size_pre_interpolation):
+        logging.warning(f'Image is smaller than needed mesh print size - {mesh_pixel_size_pre_interpolation}')
         return False
     else:
         return im
@@ -106,16 +105,17 @@ def save_as_gif(im, filename):
 
 
 def save_patch_segmentation_images(i_path, i_patch, patch,
-                                   probability_map, probability_map_upsampled, largest_object_mask):
+                                   probability_map, probability_map_upsampled,
+                                   largest_object_mask, thr):
 
     tif.imsave(os.path.join(OUTPUT_PATH_ORIGINAL, f'{i_path}_{i_patch}.tif'), patch)
     tif.imsave(os.path.join(OUTPUT_PATH_PROBABILITY, f'{i_path}_{i_patch}.tif'), probability_map)
     tif.imsave(os.path.join(OUTPUT_PATH_PROBABILITY_PROCESSED, f'{i_path}_{i_patch}.tif'), probability_map_upsampled)
-    tif.imsave(os.path.join(OUTPUT_PATH_BINARY, f'{i_path}_{i_patch}.tif'), largest_object_mask)
+    tif.imsave(os.path.join(OUTPUT_PATH_BINARY, f'{i_path}_{i_patch}_{thr}.tif'), largest_object_mask)
 
 
 def image_properties_to_csv(i_path, p, voxel_size, interpolation_factors,
-                            mesh_size_in_pixels_pre_interpolation, mesh_size_micron_str,
+                            mesh_pixel_size_pre_interpolation, mesh_size_micron_str,
                             patches_start_idxs):
     file_path = os.path.join(OUTPUT_PATH, 'image_properties.csv')
 
@@ -125,7 +125,7 @@ def image_properties_to_csv(i_path, p, voxel_size, interpolation_factors,
         if f.read(1) == "":  # Check if the file is empty
             header = (
                 "idx,p,voxel_size,interpolation_factors,"
-                "mesh_size_in_pixels_pre_interpolation,mesh_size_micron_str,"
+                "mesh_pixel_size_pre_interpolation,mesh_size_micron_str,"
                 "patches_start_idxs\n"
             )
             f.seek(0)  # Move back to the start of the file to write the header
@@ -133,12 +133,19 @@ def image_properties_to_csv(i_path, p, voxel_size, interpolation_factors,
 
         row = (
             f"{i_path},{p},{voxel_size},{interpolation_factors},"
-            f"{mesh_size_in_pixels_pre_interpolation},{mesh_size_micron_str},"
+            f"{mesh_pixel_size_pre_interpolation},{mesh_size_micron_str},"
             f"{patches_start_idxs}\n"
         )
         f.write(row)
 
 
-def save_mesh(mesh, output_dir, i_path, i_patch, mesh_size_micron):
-    filepath = os.path.join(output_dir, 'meshes', f'{i_path}_{i_patch}_{mesh_size_micron}micron.stl')
+def save_mesh(mesh, filename):
+    filepath = os.path.join(OUTPUT_PATH_MESH, f'{filename}.stl')
     mesh.export(filepath)
+
+
+def get_binary_image(filename):
+    binary_path = glob(os.path.join(OUTPUT_PATH_BINARY, f'{filename}*.tif'))[0]
+    binary = tif.imread(binary_path)
+    thr = int(binary_path.split('_')[-1].split('.')[0])
+    return binary, thr

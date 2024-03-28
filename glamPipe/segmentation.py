@@ -66,23 +66,23 @@ def setup_and_run_segmentation():
 
         voxel_size = image_properties.get_voxel_size(p)
         interpolation_factors = image_properties.get_interpolation_factor(voxel_size, ARGS.default_voxel_size)
-        mesh_size_in_pixels_pre_interpolation = image_properties.get_mesh_size_in_pixels_pre_interpolation(
+        mesh_pixel_size_pre_interpolation = image_properties.get_mesh_size_in_pixels_pre_interpolation(
             ARGS.default_mesh_size_in_pixels, interpolation_factors)
-        mesh_size_micron_str = image_properties.get_mesh_size_micron_str(mesh_size_in_pixels_pre_interpolation,
+        mesh_size_micron_str = image_properties.get_mesh_size_micron_str(mesh_pixel_size_pre_interpolation,
                                                                          voxel_size)
 
-        im = io_tools.read_image(p, mesh_size_in_pixels_pre_interpolation)
+        im = io_tools.read_image(p, mesh_pixel_size_pre_interpolation)
         if isinstance(im, bool):
             continue
 
-        patches_start_idxs = image_properties.get_patches_start_idxs(im.shape, mesh_size_in_pixels_pre_interpolation)
+        patches_start_idxs = image_properties.get_patches_start_idxs(im.shape, mesh_pixel_size_pre_interpolation)
 
         io_tools.image_properties_to_csv(i_path, p, voxel_size, interpolation_factors,
-                                         mesh_size_in_pixels_pre_interpolation, mesh_size_micron_str,
+                                         mesh_pixel_size_pre_interpolation, mesh_size_micron_str,
                                          patches_start_idxs)
 
         for i_patch, patch_start_idxs in enumerate(patches_start_idxs):
-            patch = image_operations.extract_patch(im, patch_start_idxs, mesh_size_in_pixels_pre_interpolation)
+            patch = image_operations.extract_patch(im, patch_start_idxs, mesh_pixel_size_pre_interpolation)
 
             probability_map = predict(patch, model_resource, prediction_pipeline)
 
@@ -94,4 +94,5 @@ def setup_and_run_segmentation():
             largest_object_mask = image_operations.create_binary(probability_map_upsampled, thr)
 
             io_tools.save_patch_segmentation_images(i_path, i_patch, patch,
-                                                    probability_map, probability_map_upsampled, largest_object_mask)
+                                                    probability_map, probability_map_upsampled,
+                                                    largest_object_mask, thr)
