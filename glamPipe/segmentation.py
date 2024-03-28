@@ -3,6 +3,10 @@ from bioimageio.core.resource_tests import test_model
 import numpy as np
 import xarray as xr
 import logging
+from glamPipe import io_tools
+from glamPipe import image_properties
+from glamPipe import image_operations
+from glamPipe.config import ARGS
 
 
 def output_model_info(model_resource):
@@ -49,3 +53,46 @@ def predict(im, model_resource, prediction_pipeline):
     logging.info('Done: Segmented image.')
 
     return output_im
+
+
+def setup_and_run_segmentation():
+    output_dir_path = io_tools.make_output_dirs()
+    paths = io_tools.get_image_paths(ARGS.path_originals, ARGS.condition, output_dir_path)
+    model_resource, prediction_pipeline = load_model(ARGS.path_segmentation_model)
+
+    for i_path, p in enumerate(paths):
+
+        logging.info(f'image {i_path}: {p}')
+
+        voxel_size = image_properties.get_voxel_size(p)
+        interpolation_factors = image_properties.get_interpolation_factor(voxel_size, ARGS.default_voxel_size)
+        mesh_size_in_pixels_pre_interpolation = image_properties.get_mesh_size_in_pixels_pre_interpolation(
+            ARGS.default_mesh_size_in_pixels, interpolation_factors)
+        mesh_size_micron_str = image_properties.get_mesh_size_micron_str(mesh_size_in_pixels_pre_interpolation,
+                                                                         voxel_size)
+
+        im = io_tools.read_image(p, mesh_size_in_pixels_pre_interpolation)
+        if isinstance(im, bool):
+            continue
+
+        patches_start_idxs = image_properties.get_patches_start_idxs(im.shape, mesh_size_in_pixels_pre_interpolation)
+
+        # save a new row to text file for the current image - save i_path, p, voxel_size, interpolation_factors, mesh_size_in_pixels_pre_interpolation, mesh_size_micron_str, patches_start_idxs
+
+        for i_patch, patch_start_idxs in enumerate(patches_start_idxs):
+            patch = image_operations.extract_patch(im, patch_start_idxs, mesh_size_in_pixels_pre_interpolation)
+
+            probability_map = predict(patch, model_resource, prediction_pipeline)
+
+            probability_map_smooth = image_operations.smooth_image(probability_map, ARGS.gaussian_sigma)
+            probability_map_upsampled = image_operations.interpolate_for_upsample(probability_map_smooth,
+                                                                                  interpolation_factors)
+
+            thr = image_properties.get_threshold(probability_map_upsampled, ARGS.threshold_method)
+            largest_object_mask = image_operations.create_binary(probability_map_upsampled, thr)
+
+            io_tools.save_patch_segmentation_images(output_dir_path,
+                                                    i_path, i_patch,
+                                                    patch,
+                                                    probability_map, probability_map_upsampled,
+                                                    largest_object_mask)

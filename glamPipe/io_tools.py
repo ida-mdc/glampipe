@@ -8,14 +8,24 @@ from glamPipe.mesh_operations import save_mesh
 from glamPipe.config import ARGS, TODAY_STR
 
 
-def make_output_dirs(path_output):
+def make_output_dirs():
     output_dir = os.path.join('data', f'{TODAY_STR}_{ARGS.condition}_{ARGS.threshold_method}')
 
     os.makedirs(os.path.join(output_dir, 'original'), exist_ok=True)
     os.makedirs(os.path.join(output_dir, 'probability'), exist_ok=True)
+    os.makedirs(os.path.join(output_dir, 'probability_processed'), exist_ok=True)
     os.makedirs(os.path.join(output_dir, 'binary'), exist_ok=True)
     os.makedirs(os.path.join(output_dir, 'meshes'), exist_ok=True)
+    os.makedirs(os.path.join(output_dir, 'training_set'), exist_ok=True)
 
+    return output_dir
+
+
+def get_existing_output_dir():
+    output_dir = os.path.join(ARGS.path_output, ARGS.segmentation_dir_date)
+    # check if subdir probability if not empty. if empty throw error
+    # check if meshes subdir is empty. if its not empty, raise a warning
+    # check if training_set subdir is empty. if its not empty, raise a warning
     return output_dir
 
 
@@ -35,7 +45,7 @@ def get_string_rules(condition):
     return str_include, str_exclude
 
 
-def get_image_paths(dir_path, condition):
+def get_image_paths(dir_path, condition, output_dir):
     all_image_paths = glob(os.path.join(dir_path, '*', '*.lsm'))
     all_image_paths.extend(glob(os.path.join(dir_path, '*', '*', '*.lsm')))
     all_image_paths.extend(glob(os.path.join(dir_path, '*', '*', '*', '*.lsm')))
@@ -48,6 +58,8 @@ def get_image_paths(dir_path, condition):
                            not any(s in p.lower() for s in str_exclude)]
 
     logging.info(f'Number of images: {len(all_image_paths)}')
+
+    save_paths_to_txt(all_image_paths, output_dir)
 
     return all_image_paths
 
@@ -73,9 +85,7 @@ def read_image(p, mesh_size_in_pixels_pre_interpolation):
 
 def save_images_and_mesh(output_dir, i_path, i_patch, patch, probability_map, largest_object_mask, mesh,
                          mesh_size_micron_str):
-    tif.imsave(os.path.join(output_dir, 'original', f'{i_path}_{i_patch}.tif'), patch)
-    tif.imsave(os.path.join(output_dir, 'probability', f'{i_path}_{i_patch}.tif'), probability_map)
-    tif.imsave(os.path.join(output_dir, 'binary', f'{i_path}_{i_patch}.tif'), largest_object_mask)
+
     save_mesh(mesh, output_dir, i_path, i_patch, mesh_size_micron_str)
 
 
@@ -112,3 +122,11 @@ def save_as_gif(im, filename):
             # converted_frames.append(frame)  # If already 3D, use as is
 
     imageio.mimsave(filename, converted_frames, format='GIF')
+
+
+def save_patch_segmentation_images(output_dir, i_path, i_patch,
+                                   patch, probability_map, probability_map_upsampled, largest_object_mask):
+    tif.imsave(os.path.join(output_dir, 'original', f'{i_path}_{i_patch}.tif'), patch)
+    tif.imsave(os.path.join(output_dir, 'probability', f'{i_path}_{i_patch}.tif'), probability_map)
+    tif.imsave(os.path.join(output_dir, 'probability_processed', f'{i_path}_{i_patch}.tif'), probability_map_upsampled)
+    tif.imsave(os.path.join(output_dir, 'binary', f'{i_path}_{i_patch}.tif'), largest_object_mask)
