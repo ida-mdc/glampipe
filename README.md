@@ -5,7 +5,8 @@
 GLAM: Generative Lung Architecture Modeling (glamPipe) is a powerful and flexible pipeline designed for scientists and researchers in the field of computational biology and medical imaging. 
 It offers a comprehensive suite of tools for 3D image segmentation, 3D mesh generation (.stl files), 
 and preparation of training sets for diffusion process-based image generation.  
-In combination with training and predicting of the diffusion model, the pipeline supports computationally generating 3D meshes that can be bio-printed to enlarge the imaged dataset for drug and treatment testing.
+In combination with training and predicting of the diffusion model, the pipeline supports computationally generating 3D meshes that can be bio-printed to enlarge the imaged dataset for drug and treatment testing.  
+Diffusion model: https://github.com/ida-mdc/diff3d 
 
 ## Features
 
@@ -14,15 +15,15 @@ In combination with training and predicting of the diffusion model, the pipeline
 - **Diffusion Process Preparation:** Prepare your dataset for training with diffusion process-based generative models, enabling the creation of synthetic biological structures.
 
 ## Installation
-Create a conda/virtual env and activate it.  
-clone the repository and run the following command in its root directory:
+Create a conda/virtual env and activate it.    
+clone the repository and run the following command in its root directory:  
 `pip install .`
 
 ## Command-Line Arguments
 
 This tool supports various command-line arguments to customize its behavior. Below is a detailed description of each argument:
 
-- `-pout`, `--path-output` **(Required)**: Specifies the output path where result directories will be created or found if segmentation was previously done. This argument is required.
+- `-obp`, `--output-base-path` **(Required)**: Specifies the output path where result directories will be created or found if segmentation was previously done. This argument is required.
 
 - `-s`, `--is_segment`: Enables the segmentation process. When set, path to original images and the segmentation model must be provided.
 
