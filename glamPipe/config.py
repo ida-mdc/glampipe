@@ -69,6 +69,12 @@ else:
     output_date = datetime.today().strftime('%Y%m%d')
 
 OUTPUT_PATH = os.path.join(ARGS.output_base_path, f'glamPipe_{output_date}_{ARGS.condition}_{ARGS.threshold_method}')
+OUTPUT_PATH_ORIGINAL = os.path.join(OUTPUT_PATH, 'original')
+OUTPUT_PATH_PROBABILITY = os.path.join(OUTPUT_PATH, 'probability')
+OUTPUT_PATH_PROBABILITY_PROCESSED = os.path.join(OUTPUT_PATH, 'probability_processed')
+OUTPUT_PATH_BINARY = os.path.join(OUTPUT_PATH, 'binary')
+OUTPUT_PATH_MESH = os.path.join(OUTPUT_PATH, 'meshes')
+OUTPUT_PATH_TRAINING_SET = os.path.join(OUTPUT_PATH, 'training_set')
 
 check_args()
 set_logger()

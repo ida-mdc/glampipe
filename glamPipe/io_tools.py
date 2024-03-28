@@ -5,15 +5,17 @@ import numpy as np
 import imageio
 import tifffile as tif
 from glamPipe.config import OUTPUT_PATH
+from glamPipe.config import OUTPUT_PATH_ORIGINAL, OUTPUT_PATH_PROBABILITY, OUTPUT_PATH_PROBABILITY_PROCESSED, \
+    OUTPUT_PATH_BINARY, OUTPUT_PATH_MESH, OUTPUT_PATH_TRAINING_SET
 
 
 def make_output_sub_dirs():
-    os.makedirs(os.path.join(OUTPUT_PATH, 'original'), exist_ok=True)
-    os.makedirs(os.path.join(OUTPUT_PATH, 'probability'), exist_ok=True)
-    os.makedirs(os.path.join(OUTPUT_PATH, 'probability_processed'), exist_ok=True)
-    os.makedirs(os.path.join(OUTPUT_PATH, 'binary'), exist_ok=True)
-    os.makedirs(os.path.join(OUTPUT_PATH, 'meshes'), exist_ok=True)
-    os.makedirs(os.path.join(OUTPUT_PATH, 'training_set'), exist_ok=True)
+    os.makedirs(OUTPUT_PATH_ORIGINAL)
+    os.makedirs(OUTPUT_PATH_PROBABILITY)
+    os.makedirs(OUTPUT_PATH_PROBABILITY_PROCESSED)
+    os.makedirs(OUTPUT_PATH_BINARY)
+    os.makedirs(OUTPUT_PATH_MESH)
+    os.makedirs(OUTPUT_PATH_TRAINING_SET)
 
 
 def get_string_rules(condition):
@@ -105,10 +107,11 @@ def save_as_gif(im, filename):
 
 def save_patch_segmentation_images(i_path, i_patch, patch,
                                    probability_map, probability_map_upsampled, largest_object_mask):
-    tif.imsave(os.path.join(OUTPUT_PATH, 'original', f'{i_path}_{i_patch}.tif'), patch)
-    tif.imsave(os.path.join(OUTPUT_PATH, 'probability', f'{i_path}_{i_patch}.tif'), probability_map)
-    tif.imsave(os.path.join(OUTPUT_PATH, 'probability_processed', f'{i_path}_{i_patch}.tif'), probability_map_upsampled)
-    tif.imsave(os.path.join(OUTPUT_PATH, 'binary', f'{i_path}_{i_patch}.tif'), largest_object_mask)
+
+    tif.imsave(os.path.join(OUTPUT_PATH_ORIGINAL, f'{i_path}_{i_patch}.tif'), patch)
+    tif.imsave(os.path.join(OUTPUT_PATH_PROBABILITY, f'{i_path}_{i_patch}.tif'), probability_map)
+    tif.imsave(os.path.join(OUTPUT_PATH_PROBABILITY_PROCESSED, f'{i_path}_{i_patch}.tif'), probability_map_upsampled)
+    tif.imsave(os.path.join(OUTPUT_PATH_BINARY, f'{i_path}_{i_patch}.tif'), largest_object_mask)
 
 
 def image_properties_to_csv(i_path, p, voxel_size, interpolation_factors,
