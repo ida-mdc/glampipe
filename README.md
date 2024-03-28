@@ -9,7 +9,7 @@ In combination with training and predicting of the diffusion model, the pipeline
 
 ## Features
 
-- **3D Image Segmentation:** Utilize pre-trained model for precise segmentation of 3D images of tissue.
+- **3D Image Segmentation:** Utilize pre-trained model for precise segmentation of 3D images of tissue - done on printable size patches of the input images.
 - **3D Mesh Generation:** Convert segmented images into high-quality 3D meshes in STL format, suitable for 3D printing.
 - **Diffusion Process Preparation:** Prepare your dataset for training with diffusion process-based generative models, enabling the creation of synthetic biological structures.
 
