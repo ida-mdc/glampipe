@@ -1,23 +1,20 @@
-from glamPipe.config import ARGS, set_logger
-from glamPipe import io_tools
 from glamPipe import segmentation
 from glamPipe import mesh_operations
 from glamPipe import prep_diffusion
+from glamPipe import config  # run config.py
+from glamPipe.config import ARGS
 
 
 def main():
-    set_logger()
 
     if not ARGS.is_segmentation:
         segmentation.setup_and_run_segmentation()
-    else:
-        output_dir_path = io_tools.get_existing_output_dir()
 
     if ARGS.is_mesh:
-        mesh_operations.run_mesh_creation(output_dir_path)
+        mesh_operations.run_mesh_creation()
 
     if ARGS.is_prep_for_diffusion:
-        prep_diffusion.run_create_training_set(output_dir_path)
+        prep_diffusion.run_create_training_set()
 
 
 if __name__ == "__main__":

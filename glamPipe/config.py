@@ -16,32 +16,34 @@ def set_logger():
     warnings.filterwarnings('ignore')
 
 
-def check_args(args):
-    if not args.is_segment and not args.is_mesh and not args.is_prep_for_diffusion:
+def check_args():
+    if not ARGS.is_segment and not ARGS.is_mesh and not ARGS.is_prep_for_diffusion:
         raise ValueError('At least one of the following must be true: is_segment, is_mesh, is_prep_for_diffusion.')
-    if args.is_segment and args.path_originals is None:
+    if ARGS.is_segment and ARGS.path_originals is None:
         raise ValueError('Path to original images must be provided when segmenting.')
-    if args.is_segment and args.segmentation_dir_date is not None:
+    if ARGS.is_segment and ARGS.segmentation_dir_date is not None:
         raise ValueError('segmentation_dir_date should not be provided when segmenting, '
                          'as it implies segmentation results already exist.')
-    if args.is_segment and args.condition is None:
+    if ARGS.is_segment and ARGS.condition is None:
         logging.warning('Condition not provided. Will use all images in the directory.')
-    if args.is_segment and args.path_segmentation_model is None:
+    if ARGS.is_segment and ARGS.path_segmentation_model is None:
         raise ValueError('Path to segmentation model must be provided when segmenting.')
-    if not args.is_segment and args.condition is not None:
+    if not ARGS.is_segment and ARGS.condition is not None:
         raise ValueError('Condition should only be provided when segmenting.')
-    if not os.path.exists(args.path_output):
+    if not os.path.exists(ARGS.output_base_path):
         raise ValueError('Output path where result dir will be created (or found if segmentation was done)'
                          ' does not exist.')
-    if args.segmentation_dir_date:
-        if not os.path.exists(os.path.join(args.path_output, args.segmentation_dir_date)):
+    if ARGS.segmentation_dir_date:
+        if not os.path.exists(OUTPUT_PATH):
+            raise ValueError('Segmentation results base directory does not exist.')
+        if not os.path.exists(os.path.join(OUTPUT_PATH, 'probability_processed')):
             raise ValueError('Segmentation results directory does not exist.')
 
 
 def get_user_arguments():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-pout', '--path-output', required=True)
+    parser.add_argument('-obp', '--output-base-path', required=True)
     parser.add_argument('-s', '--is-segment', action='store_true')
     parser.add_argument('-m', '--is-mesh', action='store_true')
     parser.add_argument('-g', '--is-prep-for-diffusion', action='store_true')
@@ -56,9 +58,17 @@ def get_user_arguments():
     parser.add_argument('-gs', '--gaussian-sigma', default=[1.2, 0.8, 0.8], type=float, nargs='*')
 
     arguments = parser.parse_args()
-    check_args(arguments)
     return arguments
 
 
 ARGS = get_user_arguments()
-TODAY_STR = datetime.today().strftime('%Y%m%d')
+
+if ARGS.segmentation_dir_date:
+    output_date = ARGS.segmentation_dir_date
+else:
+    output_date = datetime.today().strftime('%Y%m%d')
+
+OUTPUT_PATH = os.path.join(ARGS.output_base_path, f'glamPipe_{output_date}_{ARGS.condition}_{ARGS.threshold_method}')
+
+check_args()
+set_logger()
