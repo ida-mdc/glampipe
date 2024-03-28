@@ -56,8 +56,8 @@ def predict(im, model_resource, prediction_pipeline):
 
 
 def setup_and_run_segmentation():
-    output_dir_path = io_tools.make_output_dirs()
-    paths = io_tools.get_image_paths(ARGS.path_originals, ARGS.condition, output_dir_path)
+    io_tools.make_output_sub_dirs()
+    paths = io_tools.get_original_image_paths(ARGS.path_originals, ARGS.condition)
     model_resource, prediction_pipeline = load_model(ARGS.path_segmentation_model)
 
     for i_path, p in enumerate(paths):
@@ -77,7 +77,9 @@ def setup_and_run_segmentation():
 
         patches_start_idxs = image_properties.get_patches_start_idxs(im.shape, mesh_size_in_pixels_pre_interpolation)
 
-        # save a new row to text file for the current image - save i_path, p, voxel_size, interpolation_factors, mesh_size_in_pixels_pre_interpolation, mesh_size_micron_str, patches_start_idxs
+        io_tools.image_properties_to_csv(i_path, p, voxel_size, interpolation_factors,
+                                         mesh_size_in_pixels_pre_interpolation, mesh_size_micron_str,
+                                         patches_start_idxs)
 
         for i_patch, patch_start_idxs in enumerate(patches_start_idxs):
             patch = image_operations.extract_patch(im, patch_start_idxs, mesh_size_in_pixels_pre_interpolation)
@@ -91,8 +93,5 @@ def setup_and_run_segmentation():
             thr = image_properties.get_threshold(probability_map_upsampled, ARGS.threshold_method)
             largest_object_mask = image_operations.create_binary(probability_map_upsampled, thr)
 
-            io_tools.save_patch_segmentation_images(output_dir_path,
-                                                    i_path, i_patch,
-                                                    patch,
-                                                    probability_map, probability_map_upsampled,
-                                                    largest_object_mask)
+            io_tools.save_patch_segmentation_images(i_path, i_patch, patch,
+                                                    probability_map, probability_map_upsampled, largest_object_mask)
