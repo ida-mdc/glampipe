@@ -117,17 +117,18 @@ def save_patch_segmentation_images(i_path, i_patch, patch,
 def image_properties_to_csv(i_path, p, voxel_size, interpolation_factors,
                             mesh_size_in_pixels_pre_interpolation, mesh_size_micron_str,
                             patches_start_idxs):
-
     file_path = os.path.join(OUTPUT_PATH, 'image_properties.csv')
 
-    with open(file_path, 'a') as f:
-
-        if not os.path.exists(file_path):
+    # Open the file in 'a+' mode to append and read;
+    with open(file_path, 'a+') as f:
+        f.seek(0)  # Move to the start of the file to check if it's empty
+        if f.read(1) == "":  # Check if the file is empty
             header = (
                 "idx,p,voxel_size,interpolation_factors,"
                 "mesh_size_in_pixels_pre_interpolation,mesh_size_micron_str,"
                 "patches_start_idxs\n"
             )
+            f.seek(0)  # Move back to the start of the file to write the header
             f.write(header)
 
         row = (
