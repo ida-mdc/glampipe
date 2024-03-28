@@ -42,9 +42,9 @@ def get_user_arguments():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-pout', '--path-output', required=True)
-    parser.add_argument('-s', '--is_segment', action='store_true')
-    parser.add_argument('-m', '--is_mesh', action='store_true')
-    parser.add_argument('-g', '--is_prep_for_diffusion', action='store_true')
+    parser.add_argument('-s', '--is-segment', action='store_true')
+    parser.add_argument('-m', '--is-mesh', action='store_true')
+    parser.add_argument('-g', '--is-prep-for-diffusion', action='store_true')
     parser.add_argument('-porg', '--path-originals', default=None)
     parser.add_argument('-sdd', '--segmentation-dir-date', default=None)
     parser.add_argument('-c', '--condition', default=None, choices=['emphysema', 'healthy', 'fibrotic'])
