@@ -2,9 +2,8 @@
 
 ## Introduction
 
-GLAM: Generative Lung Architecture Modeling (glamPipe) is a powerful and flexible pipeline designed for scientists and researchers in the field of computational biology and medical imaging. 
-It offers a comprehensive suite of tools for 3D image segmentation, 3D mesh generation (.stl files), 
-and preparation of training sets for diffusion process-based image generation.  
+GLAM: Generative Lung Architecture Modeling (glamPipe) is a flexible pipeline designed for microscopy and bio-medical images. 
+It offers a suite of tools for 3D image segmentation, 3D mesh generation (.stl files),  and preparation of training sets for diffusion process-based image generation.  
 In combination with training and predicting of the diffusion model, the pipeline supports computationally generating 3D meshes that can be bio-printed to enlarge the imaged dataset for drug and treatment testing.  
 Diffusion model: https://github.com/ida-mdc/diff3d 
 
@@ -15,7 +14,9 @@ Diffusion model: https://github.com/ida-mdc/diff3d
 - **Diffusion Process Preparation:** Prepare your dataset for training with diffusion process-based generative models, enabling the creation of synthetic biological structures.
 
 ## Installation
-Create a conda/virtual env and activate it.    
+Create a conda/virtual env and activate it: 
+conda create -n glamPipe python
+`conda create -n glamPipe python=3.11`
 clone the repository and run the following command in its root directory:  
 `pip install .`
 
