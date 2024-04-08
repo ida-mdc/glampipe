@@ -3,10 +3,10 @@ from bioimageio.core.resource_tests import test_model
 import numpy as np
 import xarray as xr
 import logging
-from glamPipe import io_tools
-from glamPipe import image_properties
-from glamPipe import image_operations
-from glamPipe.config import ARGS
+from glampipe import io_tools
+from glampipe import image_properties
+from glampipe import image_operations
+from glampipe.config import ARGS
 
 
 def output_model_info(model_resource):
@@ -55,6 +55,17 @@ def predict(im, model_resource, prediction_pipeline):
     return output_im
 
 
+def post_process_probability(i_patch, i_path, interpolation_factors, probability_map):
+    probability_map_smooth = image_operations.smooth_image(probability_map, ARGS.gaussian_sigma)
+    probability_map_upsampled = image_operations.interpolate_for_upsample(probability_map_smooth,
+                                                                          interpolation_factors)
+    thr = image_properties.get_threshold(probability_map_upsampled, ARGS.threshold_method)
+    largest_object_mask = image_operations.create_binary(probability_map_upsampled, thr)
+
+    io_tools.save_post_processed_probability_images(i_patch, i_path,
+                                                    largest_object_mask, probability_map_upsampled, thr)
+
+
 def setup_and_run_segmentation():
     io_tools.make_output_sub_dirs()
     paths = io_tools.get_original_image_paths(ARGS.path_originals, ARGS.condition)
@@ -86,13 +97,6 @@ def setup_and_run_segmentation():
 
             probability_map = predict(patch, model_resource, prediction_pipeline)
 
-            probability_map_smooth = image_operations.smooth_image(probability_map, ARGS.gaussian_sigma)
-            probability_map_upsampled = image_operations.interpolate_for_upsample(probability_map_smooth,
-                                                                                  interpolation_factors)
+            io_tools.save_patch_segmentation_images(i_path, i_patch, patch, probability_map)
 
-            thr = image_properties.get_threshold(probability_map_upsampled, ARGS.threshold_method)
-            largest_object_mask = image_operations.create_binary(probability_map_upsampled, thr)
-
-            io_tools.save_patch_segmentation_images(i_path, i_patch, patch,
-                                                    probability_map, probability_map_upsampled,
-                                                    largest_object_mask, thr)
+            post_process_probability(i_patch, i_path, interpolation_factors, probability_map)

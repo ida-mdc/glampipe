@@ -4,8 +4,8 @@ import logging
 import numpy as np
 import imageio
 import tifffile as tif
-from glamPipe.config import OUTPUT_PATH
-from glamPipe.config import OUTPUT_PATH_ORIGINAL, OUTPUT_PATH_PROBABILITY, OUTPUT_PATH_PROBABILITY_PROCESSED, \
+from glampipe.config import OUTPUT_PATH
+from glampipe.config import OUTPUT_PATH_ORIGINAL, OUTPUT_PATH_PROBABILITY, OUTPUT_PATH_PROBABILITY_PROCESSED, \
     OUTPUT_PATH_BINARY, OUTPUT_PATH_MESH, OUTPUT_PATH_TRAINING_SET
 
 
@@ -104,12 +104,13 @@ def save_as_gif(im, filename):
     imageio.mimsave(filename, converted_frames, format='GIF')
 
 
-def save_patch_segmentation_images(i_path, i_patch, patch,
-                                   probability_map, probability_map_upsampled,
-                                   largest_object_mask, thr):
+def save_patch_segmentation_images(i_path, i_patch, patch, probability_map):
 
     tif.imsave(os.path.join(OUTPUT_PATH_ORIGINAL, f'{i_path}_{i_patch}.tif'), patch)
     tif.imsave(os.path.join(OUTPUT_PATH_PROBABILITY, f'{i_path}_{i_patch}.tif'), probability_map)
+
+
+def save_post_processed_probability_images(i_patch, i_path, largest_object_mask, probability_map_upsampled, thr):
     tif.imsave(os.path.join(OUTPUT_PATH_PROBABILITY_PROCESSED, f'{i_path}_{i_patch}.tif'), probability_map_upsampled)
     tif.imsave(os.path.join(OUTPUT_PATH_BINARY, f'{i_path}_{i_patch}_{thr}.tif'), largest_object_mask)
 

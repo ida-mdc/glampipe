@@ -3,7 +3,7 @@ import trimesh
 from scipy.ndimage import binary_dilation
 from skimage.measure import marching_cubes
 import logging
-from glamPipe import io_tools
+from glampipe import io_tools
 
 
 def make_mesh(im, thr, mask):

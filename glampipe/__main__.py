@@ -1,8 +1,8 @@
-from glamPipe import segmentation
-from glamPipe import mesh_operations
-from glamPipe import prep_diffusion
-from glamPipe import config  # run config.py
-from glamPipe.config import ARGS
+from glampipe import segmentation
+from glampipe import mesh_operations
+from glampipe import prep_diffusion
+from glampipe import config  # run config.py
+from glampipe.config import ARGS
 
 
 def main():
