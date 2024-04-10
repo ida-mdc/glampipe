@@ -67,7 +67,7 @@ def run_process_probability():
         probability_map = io_tools.read_image(p)
 
         probability_map_smooth = image_operations.smooth_image(probability_map, ARGS.gaussian_sigma)
-        probability_map_upsampled = image_operations.interpolate_for_upsample(probability_map_smooth,
+        probability_map_upsampled = image_operations.resize_interpolate_image(probability_map_smooth,
                                                                               interpolation_factors)
         thr = image_properties.get_threshold(probability_map_upsampled, ARGS.threshold_method)
         largest_object_mask = image_operations.create_binary(probability_map_upsampled, thr)

@@ -1,6 +1,7 @@
 from scipy import ndimage
 import numpy as np
 import logging
+from scipy.ndimage import gaussian_filter
 
 
 def extract_patch(image, patch_start_idxs, patch_size):
@@ -16,31 +17,22 @@ def smooth_image(im, sigma=1):
     return im
 
 
-def interpolate_for_upsample(im, zxy_factors, additional_factor=2):
+def resize_interpolate_image(im, zxy_factors, additional_factor=2):
     zoom_factors = [s * additional_factor for s in zxy_factors]
-    if any(f < 0 for f in zoom_factors):
+
+    if all(f < 1 for f in zoom_factors):  # down-sampling - anti-aliasing
+        sigma = [1.0/f for f in zoom_factors]
+        im = gaussian_filter(im, sigma=sigma)
+    elif any(f < 1 for f in zoom_factors):
         logging.warning(
             f'Applying down-sampling (at least in one dimension) without anti-aliasing. Zoom factor: {zoom_factors}')
 
     logging.info(f'Up-sampling factor z,x,y - {zoom_factors}')
-    upsampled_image = ndimage.zoom(im, zoom_factors, order=3).astype(np.float64)
+    zoomed_image = ndimage.zoom(im, zoom_factors, order=3).astype(np.float64)
 
-    logging.info(f'Up-sampled shape and dtype: {upsampled_image.shape}, {upsampled_image.dtype}')
+    logging.info(f'Up-sampled shape and dtype: {zoomed_image.shape}, {zoomed_image.dtype}')
 
-    return upsampled_image
-
-
-# def interpolate_image(im, voxel_spacing, extra_factor=1, is_downsampling=False, order=3):
-#
-#     zoom_factors = [s*extra_factor for s in voxel_spacing]
-#
-#     # Apply Gaussian filter for antialiasing if down-sampling
-#     if is_downsampling:
-#         sigma = [1.0/f for f in zoom_factors]
-#         im = gaussian_filter(im, sigma=sigma)
-#
-#     sampled_image = zoom(im, zoom_factors, order=order).astype(np.uint8)
-#     return sampled_image
+    return zoomed_image
 
 
 def create_binary(im, thr):

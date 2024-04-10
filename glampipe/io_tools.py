@@ -120,7 +120,6 @@ def save_as_gif(im, filename):
 
 
 def save_patch_segmentation_images(i_path, i_patch, patch, probability_map):
-
     tif.imsave(os.path.join(OUTPUT_PATH_ORIGINAL, f'{i_path}_{i_patch}.tif'), patch)
     tif.imsave(os.path.join(OUTPUT_PATH_PROBABILITY, f'{i_path}_{i_patch}.tif'), probability_map)
 
@@ -128,6 +127,10 @@ def save_patch_segmentation_images(i_path, i_patch, patch, probability_map):
 def save_processed_probability_images(filename, largest_object_mask, probability_processed, thr):
     tif.imsave(os.path.join(OUTPUT_PATH_PROBABILITY_PROCESSED, f'{filename}.tif'), probability_processed)
     tif.imsave(os.path.join(OUTPUT_PATH_BINARY, f'{filename}_{thr}.tif'), largest_object_mask)
+
+
+def save_training_set_image(filename, image):
+    tif.imsave(os.path.join(OUTPUT_PATH_TRAINING_SET, f'{filename}.tif'), image)
 
 
 def get_array_as_string(array):

@@ -3,6 +3,7 @@ import logging
 import numpy as np
 import re
 from skimage.filters import threshold_triangle, threshold_otsu, threshold_li, threshold_yen
+from glampipe.config import ARGS
 
 
 def get_magnification(p):
@@ -99,3 +100,18 @@ def get_threshold(image, method):
     logging.info(f'Found threshold {threshold}')
 
     return threshold
+
+
+def get_histogram_and_max_percentage(im):
+    histogram, bins = np.histogram(im.flatten(), bins=256, range=[0, 256])
+    max_count = histogram.max()
+    max_percentage = max_count / histogram.sum() * 100
+
+    histogram = histogram / histogram.sum() * 100
+
+    return histogram, bins, max_percentage
+
+
+def is_histogram_peak_above_threshold(im):
+    _, _, max_percentage = get_histogram_and_max_percentage(im)
+    return max_percentage > ARGS.histogram_peak_threshold
