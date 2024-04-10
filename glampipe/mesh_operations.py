@@ -23,18 +23,18 @@ def post_process_mesh(vertices, faces):
     # Convert to a Trimesh object
     mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
 
-    # # Remove unnecessary vertices
-    # mesh.update_faces(mesh.unique_faces())
-    # non_degenerate_faces = mesh.nondegenerate_faces()
-    # mesh.update_faces(non_degenerate_faces)
-    # mesh.process()
-    #
-    # mesh.fix_normals()
-    #
-    # if not mesh.is_watertight:
-    #     mesh.fill_holes()
-    #
-    # logging.info(f'Done: post-processed mesh. - number of faces - {int(len(mesh.faces))}')
+    # Remove unnecessary vertices
+    mesh.update_faces(mesh.unique_faces())
+    non_degenerate_faces = mesh.nondegenerate_faces()
+    mesh.update_faces(non_degenerate_faces)
+    mesh.process()
+
+    mesh.fix_normals()
+
+    if not mesh.is_watertight:
+        mesh.fill_holes()
+
+    logging.info(f'Done: post-processed mesh. - number of faces - {int(len(mesh.faces))}')
 
     return mesh
 
