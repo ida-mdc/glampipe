@@ -12,6 +12,7 @@ setup(
         'scipy>=1.7.0',
         'skimage>=0.19.0',
         'tifffile>=2021.4.8',
+        'pandas>=1.3.3',
         'imageio>=2.9.0',
         'xarray>=0.19.0',
         'bioimageio>=0.6.0',

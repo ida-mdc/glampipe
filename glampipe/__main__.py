@@ -7,8 +7,11 @@ from glampipe.config import ARGS
 
 def main():
 
-    if not ARGS.is_segmentation:
+    if ARGS.is_segment:
         segmentation.setup_and_run_segmentation()
+
+    if ARGS.is_process_probability:
+        segmentation.run_process_probability()
 
     if ARGS.is_mesh:
         mesh_operations.run_mesh_creation()

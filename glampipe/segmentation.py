@@ -6,7 +6,7 @@ import logging
 from glampipe import io_tools
 from glampipe import image_properties
 from glampipe import image_operations
-from glampipe.config import ARGS
+from glampipe.config import ARGS, OUTPUT_PATH_PROBABILITY
 
 
 def output_model_info(model_resource):
@@ -55,15 +55,24 @@ def predict(im, model_resource, prediction_pipeline):
     return output_im
 
 
-def post_process_probability(i_patch, i_path, interpolation_factors, probability_map):
-    probability_map_smooth = image_operations.smooth_image(probability_map, ARGS.gaussian_sigma)
-    probability_map_upsampled = image_operations.interpolate_for_upsample(probability_map_smooth,
-                                                                          interpolation_factors)
-    thr = image_properties.get_threshold(probability_map_upsampled, ARGS.threshold_method)
-    largest_object_mask = image_operations.create_binary(probability_map_upsampled, thr)
+def run_process_probability():
 
-    io_tools.save_post_processed_probability_images(i_patch, i_path,
-                                                    largest_object_mask, probability_map_upsampled, thr)
+    paths = io_tools.get_probability_image_paths(OUTPUT_PATH_PROBABILITY)
+
+    for i_p, p in enumerate(paths):
+
+        filename = io_tools.get_filename(p)
+        interpolation_factors = io_tools.get_interpolation_factors_from_csv(int(filename.split('_')[0]))
+
+        probability_map = io_tools.read_image(p)
+
+        probability_map_smooth = image_operations.smooth_image(probability_map, ARGS.gaussian_sigma)
+        probability_map_upsampled = image_operations.interpolate_for_upsample(probability_map_smooth,
+                                                                              interpolation_factors)
+        thr = image_properties.get_threshold(probability_map_upsampled, ARGS.threshold_method)
+        largest_object_mask = image_operations.create_binary(probability_map_upsampled, thr)
+
+        io_tools.save_processed_probability_images(filename, largest_object_mask, probability_map_upsampled, thr)
 
 
 def setup_and_run_segmentation():
@@ -98,5 +107,3 @@ def setup_and_run_segmentation():
             probability_map = predict(patch, model_resource, prediction_pipeline)
 
             io_tools.save_patch_segmentation_images(i_path, i_patch, patch, probability_map)
-
-            post_process_probability(i_patch, i_path, interpolation_factors, probability_map)

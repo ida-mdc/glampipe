@@ -4,9 +4,15 @@ import logging
 import numpy as np
 import imageio
 import tifffile as tif
-from glampipe.config import OUTPUT_PATH
-from glampipe.config import OUTPUT_PATH_ORIGINAL, OUTPUT_PATH_PROBABILITY, OUTPUT_PATH_PROBABILITY_PROCESSED, \
-    OUTPUT_PATH_BINARY, OUTPUT_PATH_MESH, OUTPUT_PATH_TRAINING_SET
+import pandas as pd
+from glampipe.config import PROPERTIES_FILE
+from glampipe.config import (OUTPUT_PATH,
+                             OUTPUT_PATH_ORIGINAL,
+                             OUTPUT_PATH_PROBABILITY,
+                             OUTPUT_PATH_PROBABILITY_PROCESSED,
+                             OUTPUT_PATH_BINARY,
+                             OUTPUT_PATH_MESH,
+                             OUTPUT_PATH_TRAINING_SET)
 
 
 def make_output_sub_dirs():
@@ -51,14 +57,18 @@ def get_original_image_paths(dir_path, condition):
     return all_image_paths
 
 
-def get_probability_processed_image_paths():
-    all_image_paths = glob(os.path.join(OUTPUT_PATH_PROBABILITY_PROCESSED, '*.tif'))
+def get_probability_image_paths(sub_dir):
+    all_image_paths = glob(os.path.join(sub_dir, '*.tif'))
     return all_image_paths
 
 
 def read_image(p, mesh_pixel_size_pre_interpolation=None):
     im = tif.imread(p)
     logging.info(f'Image shape {im.shape}')
+
+    if im.ndim == 4:
+        im = im[:, 1]
+
     if im.ndim != 3:
         logging.warning('Expected a 3D image. Skipping.')
         return False
@@ -67,6 +77,11 @@ def read_image(p, mesh_pixel_size_pre_interpolation=None):
         return False
     else:
         return im
+
+
+def get_filename(p):
+    filename = os.path.basename(p).split('.')[0]
+    return filename
 
 
 def read_gif(filename):
@@ -110,15 +125,21 @@ def save_patch_segmentation_images(i_path, i_patch, patch, probability_map):
     tif.imsave(os.path.join(OUTPUT_PATH_PROBABILITY, f'{i_path}_{i_patch}.tif'), probability_map)
 
 
-def save_post_processed_probability_images(i_patch, i_path, largest_object_mask, probability_map_upsampled, thr):
-    tif.imsave(os.path.join(OUTPUT_PATH_PROBABILITY_PROCESSED, f'{i_path}_{i_patch}.tif'), probability_map_upsampled)
-    tif.imsave(os.path.join(OUTPUT_PATH_BINARY, f'{i_path}_{i_patch}_{thr}.tif'), largest_object_mask)
+def save_processed_probability_images(filename, largest_object_mask, probability_processed, thr):
+    tif.imsave(os.path.join(OUTPUT_PATH_PROBABILITY_PROCESSED, f'{filename}.tif'), probability_processed)
+    tif.imsave(os.path.join(OUTPUT_PATH_BINARY, f'{filename}_{thr}.tif'), largest_object_mask)
+
+
+def get_array_as_string(array):
+    return np.array2string(array, separator=' ')[1:-1]
 
 
 def image_properties_to_csv(i_path, p, voxel_size, interpolation_factors,
                             mesh_pixel_size_pre_interpolation, mesh_size_micron_str,
                             patches_start_idxs):
-    file_path = os.path.join(OUTPUT_PATH, 'image_properties.csv')
+    file_path = os.path.join(OUTPUT_PATH, PROPERTIES_FILE)
+
+    patches_start_idxs_str = ' '.join([get_array_as_string(array) for array in patches_start_idxs])
 
     # Open the file in 'a+' mode to append and read;
     with open(file_path, 'a+') as f:
@@ -133,11 +154,18 @@ def image_properties_to_csv(i_path, p, voxel_size, interpolation_factors,
             f.write(header)
 
         row = (
-            f"{i_path},{p},{voxel_size},{interpolation_factors},"
-            f"{mesh_pixel_size_pre_interpolation},{mesh_size_micron_str},"
-            f"{patches_start_idxs}\n"
+            f"{i_path},{p},{get_array_as_string(voxel_size)},{get_array_as_string(interpolation_factors)},"
+            f"{get_array_as_string(mesh_pixel_size_pre_interpolation)},{mesh_size_micron_str},"
+            f"{patches_start_idxs_str}\n"
         )
         f.write(row)
+
+
+def get_interpolation_factors_from_csv(i_path):
+    df = pd.read_csv(os.path.join(OUTPUT_PATH, PROPERTIES_FILE))
+    interpolation_factors = df[df.idx == i_path]['interpolation_factors'].values[0]
+    interpolation_factors = np.array(list(map(float, interpolation_factors.split())))
+    return interpolation_factors
 
 
 def save_mesh(mesh, filename):
@@ -148,5 +176,5 @@ def save_mesh(mesh, filename):
 def get_binary_image(filename):
     binary_path = glob(os.path.join(OUTPUT_PATH_BINARY, f'{filename}*.tif'))[0]
     binary = tif.imread(binary_path)
-    thr = int(binary_path.split('_')[-1].split('.')[0])
+    thr = float(binary_path.split('_')[-1][:-4])
     return binary, thr
