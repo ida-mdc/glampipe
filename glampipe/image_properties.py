@@ -160,3 +160,7 @@ def get_histogram_and_max_percentage(im):
 def is_histogram_peak_above_threshold(im):
     _, _, max_percentage = get_histogram_and_max_percentage(im)
     return max_percentage > ARGS.histogram_peak_threshold
+
+
+def get_unique(im):
+    print(np.unique(im))

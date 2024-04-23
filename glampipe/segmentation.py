@@ -35,7 +35,7 @@ def load_model(rdf_path):
     model_resource = bioimageio.core.load_resource_description(rdf_path)
 
     output_model_info(model_resource)
-    output_model_tests(model_resource)
+    # output_model_tests(model_resource) # only works with internet connection
 
     prediction_pipeline = bioimageio.core.create_prediction_pipeline(model_resource, devices=None, weight_format=None)
 

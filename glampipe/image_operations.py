@@ -12,27 +12,24 @@ def extract_patch(image, patch_start_idxs, patch_size):
 
 
 def enhance_contrast_3d(im):
-    """Enhances the contrast of a 3D image stack using histogram equalization based on the whole stack histogram."""
-    # Compute the global histogram of the whole stack
+    # Compute the histogram and CDF of the entire 3D stack
     hist, bins = np.histogram(im.flatten(), bins=256, range=[0, 255])
-    cdf = hist.cumsum()  # cumulative distribution function
-    cdf_normalized = (cdf - cdf.min()) * 255 / (cdf.max() - cdf.min())  # normalize cdf to [0, 255]
+    cdf = hist.cumsum()  # Cumulative distribution function
+    # Normalize the CDF
+    cdf_normalized = (cdf - cdf.min()) * 255 / (cdf.max() - cdf.min())
     cdf_normalized = cdf_normalized.astype('uint8')
 
-    # Enhance contrast of each slice
-    enhanced_im= np.zeros_like(im)
+    # Initialize the array for enhanced images
+    enhanced_im = np.zeros_like(im)
+
+    # Apply histogram equalization based on the normalized CDF to each slice
     for i in range(im.shape[0]):
         sl = im[i, :, :]
+        # Normalize the slice to use the full range of 0-255
+        slice_normalized = np.interp(sl.flatten(), bins[:-1], cdf_normalized)
+        enhanced_im[i, :, :] = slice_normalized.reshape(sl.shape)
 
-        # Normalization using the min and max of the whole stack
-        slice_normalized = (sl - sl.min()) * 255 / (sl.max() - sl.min())
-        slice_normalized = slice_normalized.astype('uint8')
-
-        # Histogram equalization using the normalized CDF
-        image_equalized = cdf_normalized[slice_normalized]
-        enhanced_im[i, :, :] = image_equalized
-
-    return enhanced_im
+    return enhanced_im.astype(np.uint8)
 
 
 def smooth_image(im, sigma=1):
