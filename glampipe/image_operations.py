@@ -11,6 +11,30 @@ def extract_patch(image, patch_start_idxs, patch_size):
     return patch
 
 
+def enhance_contrast_3d(im):
+    """Enhances the contrast of a 3D image stack using histogram equalization based on the whole stack histogram."""
+    # Compute the global histogram of the whole stack
+    hist, bins = np.histogram(im.flatten(), bins=256, range=[0, 255])
+    cdf = hist.cumsum()  # cumulative distribution function
+    cdf_normalized = (cdf - cdf.min()) * 255 / (cdf.max() - cdf.min())  # normalize cdf to [0, 255]
+    cdf_normalized = cdf_normalized.astype('uint8')
+
+    # Enhance contrast of each slice
+    enhanced_im= np.zeros_like(im)
+    for i in range(im.shape[0]):
+        sl = im[i, :, :]
+
+        # Normalization using the min and max of the whole stack
+        slice_normalized = (sl - sl.min()) * 255 / (sl.max() - sl.min())
+        slice_normalized = slice_normalized.astype('uint8')
+
+        # Histogram equalization using the normalized CDF
+        image_equalized = cdf_normalized[slice_normalized]
+        enhanced_im[i, :, :] = image_equalized
+
+    return enhanced_im
+
+
 def smooth_image(im, sigma=1):
     im = ndimage.gaussian_filter(im, sigma=sigma)
     logging.info(f'Gaussian filter applied - sigma {sigma}')

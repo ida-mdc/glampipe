@@ -56,7 +56,6 @@ def predict(im, model_resource, prediction_pipeline):
 
 
 def run_process_probability():
-
     paths = io_tools.get_probability_image_paths(OUTPUT_PATH_PROBABILITY)
 
     for i_p, p in enumerate(paths):
@@ -72,7 +71,8 @@ def run_process_probability():
         thr = image_properties.get_threshold(probability_map_upsampled, ARGS.threshold_method)
         largest_object_mask = image_operations.create_binary(probability_map_upsampled, thr)
 
-        is_unusable = image_properties.is_image_too_full(largest_object_mask)
+        is_unusable = image_properties.is_image_too_full(largest_object_mask) or \
+                      image_properties.is_image_too_empty(largest_object_mask, 0.1)
 
         if not is_unusable:
             io_tools.save_processed_probability_images(filename, largest_object_mask, probability_map_upsampled, thr)
@@ -105,7 +105,9 @@ def setup_and_run_segmentation():
                                          patches_start_idxs)
 
         for i_patch, patch_start_idxs in enumerate(patches_start_idxs):
+
             patch = image_operations.extract_patch(im, patch_start_idxs, mesh_pixel_size_pre_interpolation)
+            patch = image_operations.enhance_contrast_3d(patch)
 
             probability_map = predict(patch, model_resource, prediction_pipeline)
 
