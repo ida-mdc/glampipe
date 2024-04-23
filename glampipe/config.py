@@ -40,6 +40,7 @@ def check_args():
 
 
 def save_args():
+    os.makedirs(OUTPUT_PATH, exist_ok=True)
     args = vars(ARGS)
     # create variable filename as a string of current date and time:
     filename = f'args_{datetime.now().strftime("%Y%m%d_%H%M%S")}.txt'

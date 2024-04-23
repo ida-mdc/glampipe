@@ -12,8 +12,22 @@ def get_magnification(p):
 
 def get_voxel_size(p):
     with tif.TiffFile(p) as t:
-        x = float("%.10f" % t.lsm_metadata["VoxelSizeX"])
-        z = float("%.10f" % t.lsm_metadata["VoxelSizeZ"])
+        x = z = None  # Initialize variables
+
+        # Check and extract from LSM metadata if available
+        if hasattr(t, 'lsm_metadata') and t.lsm_metadata is not None:
+            x = float("%.10f" % t.lsm_metadata["VoxelSizeX"])
+            z = float("%.10f" % t.lsm_metadata["VoxelSizeZ"])
+        elif hasattr(t, 'imagej_metadata') and 'Info' in t.imagej_metadata:
+            # Extract from ImageJ metadata if LSM metadata is not available
+            imagej_metadata = t.imagej_metadata['Info']
+            for line in imagej_metadata.split('\n'):
+                if 'Scaling|Distance|Value #1' in line:
+                    x = float(line.split('=')[1].strip())
+                elif 'Scaling|Distance|Value #3' in line:
+                    z = float(line.split('=')[1].strip())
+        else:
+            raise ValueError('Voxel size not found in LSM metadata or ImageJ metadata.')
 
     logging.info(f'Voxel size: x-{x} z-{z}')
     return np.asarray([z, x, x])
@@ -61,6 +75,25 @@ def get_patches_start_idxs(im_shape, patch_shape):
     logging.info(f'Number of patches (meshes) from image: {len(patches_start_idxs)}')
 
     return patches_start_idxs
+
+
+def quarters_of_image(im):
+    return [im[:im.shape[0]//2, :im.shape[1]//2, :im.shape[2]//2],
+                im[im.shape[0]//2:, :im.shape[1]//2, :im.shape[2]//2],
+                im[:im.shape[0]//2, im.shape[1]//2:, :im.shape[2]//2],
+                im[:im.shape[0]//2, :im.shape[1]//2, im.shape[2]//2:]]
+
+
+def is_image_too_empty(im, threshold=0.15):
+
+    quarters = quarters_of_image(im)
+
+    is_too_empty = all(np.count_nonzero(q) / q.size > threshold for q in quarters)
+
+    if not is_too_empty:
+        logging.warning('Patch is empty. Skipping.')
+
+    return is_too_empty
 
 
 def get_mesh_size_micron_str(mesh_size_in_pixels_pre_interpolation, voxel_size):

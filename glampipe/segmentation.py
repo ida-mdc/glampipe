@@ -106,4 +106,7 @@ def setup_and_run_segmentation():
 
             probability_map = predict(patch, model_resource, prediction_pipeline)
 
-            io_tools.save_patch_segmentation_images(i_path, i_patch, patch, probability_map)
+            is_usable = image_properties.is_image_too_empty(probability_map)
+
+            if is_usable:
+                io_tools.save_patch_segmentation_images(i_path, i_patch, patch, probability_map)

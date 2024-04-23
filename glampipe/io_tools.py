@@ -1,6 +1,7 @@
 from glob import glob
 import os
 import logging
+from datetime import datetime
 import numpy as np
 import imageio
 import tifffile as tif
@@ -30,7 +31,7 @@ def get_string_rules(condition):
         str_exclude = ['projection', 'quickoverview', 'healthy', 'quick10xoverview']
     elif condition == 'healthy':
         str_include = ['healthy', 'pbs', 'wt']
-        str_exclude = ['projection', 'quickoverview', 'quick10xoverview', 'bleo', 'mphe', 'tile']
+        str_exclude = ['bleo', 'mphe']
     elif condition == 'fibrotic':
         str_include = ['fibrotic', 'bleo']
         str_exclude = ['projection', 'quickoverview', 'quick10xoverview']  # , 'tile']
@@ -44,6 +45,10 @@ def get_original_image_paths(dir_path, condition):
     all_image_paths = glob(os.path.join(dir_path, '*', '*.lsm'))
     all_image_paths.extend(glob(os.path.join(dir_path, '*', '*', '*.lsm')))
     all_image_paths.extend(glob(os.path.join(dir_path, '*', '*', '*', '*.lsm')))
+
+    all_image_paths.extend(glob(os.path.join(dir_path, '*2024*', '*.tif')))
+    all_image_paths.extend(glob(os.path.join(dir_path, '*', '*2024*', '*.tif')))
+    all_image_paths.extend(glob(os.path.join(dir_path, '*', '*', '*2024*', '*.tif')))
 
     if condition is not None:
         str_include, str_exclude = get_string_rules(condition)
