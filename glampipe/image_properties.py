@@ -79,21 +79,33 @@ def get_patches_start_idxs(im_shape, patch_shape):
 
 def quarters_of_image(im):
     return [im[:im.shape[0]//2, :im.shape[1]//2, :im.shape[2]//2],
-                im[im.shape[0]//2:, :im.shape[1]//2, :im.shape[2]//2],
-                im[:im.shape[0]//2, im.shape[1]//2:, :im.shape[2]//2],
-                im[:im.shape[0]//2, :im.shape[1]//2, im.shape[2]//2:]]
+            im[im.shape[0]//2:, :im.shape[1]//2, :im.shape[2]//2],
+            im[:im.shape[0]//2, im.shape[1]//2:, :im.shape[2]//2],
+            im[:im.shape[0]//2, :im.shape[1]//2, im.shape[2]//2:]]
 
 
 def is_image_too_empty(im, threshold=0.15):
 
     quarters = quarters_of_image(im)
 
-    is_too_empty = all(np.count_nonzero(q) / q.size > threshold for q in quarters)
+    is_too_empty = any(np.count_nonzero(q) / q.size < threshold for q in quarters)
 
-    if not is_too_empty:
+    if is_too_empty:
         logging.warning('Patch is empty. Skipping.')
 
     return is_too_empty
+
+
+def is_image_too_full(im, threshold=0.75):
+
+    quarters = quarters_of_image(im)
+
+    is_too_full = any(np.count_nonzero(q) / q.size > threshold for q in quarters)
+
+    if is_too_full:
+        logging.warning('Patch is full. Skipping.')
+
+    return is_too_full
 
 
 def get_mesh_size_micron_str(mesh_size_in_pixels_pre_interpolation, voxel_size):

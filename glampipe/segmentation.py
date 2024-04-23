@@ -72,7 +72,10 @@ def run_process_probability():
         thr = image_properties.get_threshold(probability_map_upsampled, ARGS.threshold_method)
         largest_object_mask = image_operations.create_binary(probability_map_upsampled, thr)
 
-        io_tools.save_processed_probability_images(filename, largest_object_mask, probability_map_upsampled, thr)
+        is_unusable = image_properties.is_image_too_full(largest_object_mask)
+
+        if not is_unusable:
+            io_tools.save_processed_probability_images(filename, largest_object_mask, probability_map_upsampled, thr)
 
 
 def setup_and_run_segmentation():
@@ -106,7 +109,7 @@ def setup_and_run_segmentation():
 
             probability_map = predict(patch, model_resource, prediction_pipeline)
 
-            is_usable = image_properties.is_image_too_empty(probability_map)
+            is_unusable = image_properties.is_image_too_empty(probability_map)
 
-            if is_usable:
+            if not is_unusable:
                 io_tools.save_patch_segmentation_images(i_path, i_patch, patch, probability_map)
