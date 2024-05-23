@@ -107,7 +107,13 @@ def read_gif(filename):
 
 
 def save_as_gif(im, filename):
-    frames = [im[:, :, i] for i in range(im.shape[2])]
+
+    im = (im - im.min()) / (im.max() - im.min())
+    im = (im * 255).astype('uint8')
+
+    file_path = os.path.join(OUTPUT_PATH_TRAINING_SET, f'{filename}.gif')
+    #frames = [im[:, :, i] for i in range(im.shape[2])]
+    frames = [im[i, :, :] for i in range(im.shape[0])]
 
     # Convert 2D frames to 3D (RGB + Alpha)
     converted_frames = []
@@ -121,7 +127,7 @@ def save_as_gif(im, filename):
             logging.error('frame should be 2D at this stage.')
             # converted_frames.append(frame)  # If already 3D, use as is
 
-    imageio.mimsave(filename, converted_frames, format='GIF')
+    imageio.mimsave(file_path, converted_frames, format='GIF')
 
 
 def save_patch_segmentation_images(i_path, i_patch, patch, probability_map):
@@ -130,12 +136,13 @@ def save_patch_segmentation_images(i_path, i_patch, patch, probability_map):
 
 
 def save_processed_probability_images(filename, largest_object_mask, probability_processed, thr):
-    tif.imsave(os.path.join(OUTPUT_PATH_PROBABILITY_PROCESSED, f'{filename}.tif'), probability_processed)
+    tif.imsave(os.path.join(OUTPUT_PATH_PROBABILITY_PROCESSED, f'{filename}.tif'),
+               probability_processed.astype('float32'))
     tif.imsave(os.path.join(OUTPUT_PATH_BINARY, f'{filename}_{thr}.tif'), largest_object_mask)
 
 
 def save_training_set_image(filename, image):
-    tif.imsave(os.path.join(OUTPUT_PATH_TRAINING_SET, f'{filename}.tif'), image)
+    tif.imsave(os.path.join(OUTPUT_PATH_TRAINING_SET, f'{filename}.tif'), image.astype('float32'))
 
 
 def get_array_as_string(array):
