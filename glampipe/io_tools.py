@@ -34,7 +34,7 @@ def get_string_rules(condition):
         str_exclude = ['bleo', 'mphe']
     elif condition == 'fibrotic':
         str_include = ['fibrotic', 'bleo']
-        str_exclude = ['projection', 'quickoverview', 'quick10xoverview']  # , 'tile']
+        str_exclude = ['projection']  # 'quickoverview', 'quick10xoverview']  # , 'tile']
     else:
         raise ValueError(f'Condition must be in [emphysema, healthy, fibrotic]. Got {condition}.')
 
@@ -69,6 +69,7 @@ def get_probability_image_paths(sub_dir):
 
 def read_image(p, mesh_pixel_size_pre_interpolation=None):
     im = tif.imread(p)
+    im = np.squeeze(im)
     logging.info(f'Image shape {im.shape}')
 
     if im.ndim == 4:
@@ -142,7 +143,8 @@ def save_processed_probability_images(filename, largest_object_mask, probability
 
 
 def save_training_set_image(filename, image):
-    tif.imsave(os.path.join(OUTPUT_PATH_TRAINING_SET, f'{filename}.tif'), image.astype('float32'))
+    image = (image*255).astype(np.uint8)
+    tif.imsave(os.path.join(OUTPUT_PATH_TRAINING_SET, f'{filename}.tif'), image)
 
 
 def get_array_as_string(array):
