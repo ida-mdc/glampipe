@@ -66,6 +66,7 @@ def get_user_arguments():
     parser.add_argument('-dvs', '--default-voxel-size',
                         default=[0.0000022935, 0.0000013838, 0.0000013838], type=float, nargs='*')
     parser.add_argument('-dmsp', '--default-mesh-size-in-pixels', default=[64, 256, 256], type=int, nargs='*')
+    parser.add_argument('-ec', '--is-enhance-contrast', action='store_true')
     parser.add_argument('-gs', '--gaussian-sigma', default=[1.2, 0.8, 0.8], type=float, nargs='*')
     parser.add_argument('-hpt', '--histogram-peak-threshold', default=35, type=int)
     parser.add_argument('-isnn', '--image-shape-neural-network', default=[48, 128, 128], type=int, nargs='*')

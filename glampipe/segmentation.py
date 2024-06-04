@@ -107,7 +107,8 @@ def setup_and_run_segmentation():
         for i_patch, patch_start_idxs in enumerate(patches_start_idxs):
 
             patch = image_operations.extract_patch(im, patch_start_idxs, mesh_pixel_size_pre_interpolation)
-            patch = image_operations.enhance_contrast_3d(patch)
+            if ARGS.is_enhance_contrast:
+                patch = image_operations.enhance_contrast_3d(patch)
 
             probability_map = predict(patch, model_resource, prediction_pipeline)
 
