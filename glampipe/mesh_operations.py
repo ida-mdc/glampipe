@@ -4,7 +4,7 @@ from scipy.ndimage import binary_dilation
 from skimage.measure import marching_cubes
 import logging
 from glampipe import io_tools
-from glampipe.config import OUTPUT_PATH_PROBABILITY_PROCESSED
+from glampipe.config import OUTPUT_PATH_PROBABILITY
 
 
 def make_mesh(im, thr, mask):
@@ -40,11 +40,11 @@ def post_process_mesh(vertices, faces):
 
 
 def run_mesh_creation():
-    paths = io_tools.get_probability_image_paths(OUTPUT_PATH_PROBABILITY_PROCESSED)
+    paths = io_tools.get_probability_image_paths(OUTPUT_PATH_PROBABILITY)
 
     for i_p, p in enumerate(paths):
 
-        filename = io_tools.get_filename(p)
+        filename = io_tools.get_filename(p, is_extension=False)
 
         im = io_tools.read_image(p)
         binary, thr = io_tools.get_binary_image(filename)

@@ -4,11 +4,11 @@ import logging
 from scipy.ndimage import gaussian_filter
 
 
-def extract_patch(image, patch_start_idxs, patch_size):
-    patch = image[patch_start_idxs[0]:patch_start_idxs[0] + patch_size[0],
-            patch_start_idxs[1]:patch_start_idxs[1] + patch_size[1],
-            patch_start_idxs[2]:patch_start_idxs[2] + patch_size[2]]
-    return patch
+def extract_tile(image, tile_start_idxs, tile_size):
+    tile = image[tile_start_idxs[0]:tile_start_idxs[0] + tile_size[0],
+                 tile_start_idxs[1]:tile_start_idxs[1] + tile_size[1],
+                 tile_start_idxs[2]:tile_start_idxs[2] + tile_size[2]]
+    return tile
 
 
 def enhance_contrast_3d(im):
@@ -31,25 +31,24 @@ def enhance_contrast_3d(im):
 
     return enhanced_im.astype(np.uint8)
 
-
-def smooth_image(im, sigma=1):
-    im = ndimage.gaussian_filter(im, sigma=sigma)
-    logging.info(f'Gaussian filter applied - sigma {sigma}')
-    return im
+# def smooth_image(im, sigma=1):
+#     im = ndimage.gaussian_filter(im, sigma=sigma)
+#     logging.info(f'Gaussian filter applied - sigma {sigma}')
+#     return im
 
 
 def resize_interpolate_image(im, zxy_factors, additional_factor=2):
     zoom_factors = [s * additional_factor for s in zxy_factors]
 
     if all(f < 1 for f in zoom_factors):  # down-sampling - anti-aliasing
-        sigma = [1.0/f for f in zoom_factors]
+        sigma = [1.0 / f for f in zoom_factors]
         im = gaussian_filter(im, sigma=sigma)
     elif any(f < 1 for f in zoom_factors):
         logging.warning(
             f'Applying down-sampling (at least in one dimension) without anti-aliasing. Zoom factor: {zoom_factors}')
 
     logging.info(f'Up-sampling factor z,x,y - {zoom_factors}')
-    zoomed_image = ndimage.zoom(im, zoom_factors, order=3).astype(np.float64)
+    zoomed_image = ndimage.zoom(im, zoom_factors, order=3).astype(np.float32)
 
     logging.info(f'Up-sampled shape and dtype: {zoomed_image.shape}, {zoomed_image.dtype}')
 

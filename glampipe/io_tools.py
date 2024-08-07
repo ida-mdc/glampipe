@@ -8,21 +8,13 @@ import tifffile as tif
 import pandas as pd
 from glampipe.config import PROPERTIES_FILE
 from glampipe.config import (OUTPUT_PATH,
-                             OUTPUT_PATH_ORIGINAL,
-                             OUTPUT_PATH_PROBABILITY,
-                             OUTPUT_PATH_PROBABILITY_PROCESSED,
                              OUTPUT_PATH_BINARY,
                              OUTPUT_PATH_MESH,
                              OUTPUT_PATH_TRAINING_SET)
 
 
-def make_output_sub_dirs():
-    os.makedirs(OUTPUT_PATH_ORIGINAL)
-    os.makedirs(OUTPUT_PATH_PROBABILITY)
-    os.makedirs(OUTPUT_PATH_PROBABILITY_PROCESSED)
-    os.makedirs(OUTPUT_PATH_BINARY)
-    os.makedirs(OUTPUT_PATH_MESH)
-    os.makedirs(OUTPUT_PATH_TRAINING_SET)
+def make_output_sub_dir(dir_path):
+    os.makedirs(dir_path)
 
 
 def get_string_rules(condition):
@@ -62,7 +54,7 @@ def get_original_image_paths(dir_path, condition):
     return all_image_paths
 
 
-def get_probability_image_paths(sub_dir):
+def get_image_paths(sub_dir):
     all_image_paths = glob(os.path.join(sub_dir, '*.tif'))
     return all_image_paths
 
@@ -85,8 +77,10 @@ def read_image(p, mesh_pixel_size_pre_interpolation=None):
         return im
 
 
-def get_filename(p):
-    filename = os.path.basename(p).split('.')[0]
+def get_filename(p, is_extension=True):
+    filename = os.path.basename(p)
+    if not is_extension:
+        filename = filename.split('.')[0]
     return filename
 
 
@@ -113,7 +107,7 @@ def save_as_gif(im, filename):
     im = (im * 255).astype('uint8')
 
     file_path = os.path.join(OUTPUT_PATH_TRAINING_SET, f'{filename}.gif')
-    #frames = [im[:, :, i] for i in range(im.shape[2])]
+    # frames = [im[:, :, i] for i in range(im.shape[2])]
     frames = [im[i, :, :] for i in range(im.shape[0])]
 
     # Convert 2D frames to 3D (RGB + Alpha)
@@ -131,9 +125,8 @@ def save_as_gif(im, filename):
     imageio.mimsave(file_path, converted_frames, format='GIF')
 
 
-def save_patch_segmentation_images(i_path, i_patch, patch, probability_map):
-    tif.imsave(os.path.join(OUTPUT_PATH_ORIGINAL, f'{i_path}_{i_patch}.tif'), patch)
-    tif.imsave(os.path.join(OUTPUT_PATH_PROBABILITY, f'{i_path}_{i_patch}.tif'), probability_map)
+def save_image(output_path, filename, image):
+    tif.imsave(os.path.join(output_path, filename), image)
 
 
 def save_processed_probability_images(filename, largest_object_mask, probability_processed, thr):

@@ -6,7 +6,7 @@ import logging
 from glampipe import io_tools
 from glampipe import image_properties
 from glampipe import image_operations
-from glampipe.config import ARGS, OUTPUT_PATH_PROBABILITY
+from glampipe.config import ARGS, OUTPUT_PATH_PROBABILITY, OUTPUT_PATH_INTERPOLATED
 
 
 def output_model_info(model_resource):
@@ -55,65 +55,29 @@ def predict(im, model_resource, prediction_pipeline):
     return output_im
 
 
-def run_process_probability():
-    paths = io_tools.get_probability_image_paths(OUTPUT_PATH_PROBABILITY)
+def setup_and_run_segmentation():
+    model_resource, prediction_pipeline = load_model(ARGS.path_segmentation_model)
 
-    for i_p, p in enumerate(paths):
+    io_tools.make_output_sub_dir(OUTPUT_PATH_PROBABILITY)
+    paths = io_tools.get_original_image_paths(OUTPUT_PATH_INTERPOLATED, ARGS.condition)
+
+    for i_path, p in enumerate(paths):
 
         filename = io_tools.get_filename(p)
-        interpolation_factors = io_tools.get_interpolation_factors_from_csv(int(filename.split('_')[0]))
+        image = io_tools.read_image(p)
 
-        probability_map = io_tools.read_image(p)
+        probability_map = predict(image, model_resource, prediction_pipeline)
 
-        probability_map_smooth = image_operations.smooth_image(probability_map, ARGS.gaussian_sigma)
-        probability_map_upsampled = image_operations.resize_interpolate_image(probability_map_smooth,
-                                                                              interpolation_factors)
-        thr = image_properties.get_threshold(probability_map_upsampled, ARGS.threshold_method)
-        largest_object_mask = image_operations.create_binary(probability_map_upsampled, thr)
+        is_unusable = image_properties.is_image_too_empty(probability_map)
+
+        if not is_unusable:
+            io_tools.save_image(OUTPUT_PATH_PROBABILITY, filename, probability_map)
+
+        thr = image_properties.get_threshold(probability_map, ARGS.threshold_method)
+        largest_object_mask = image_operations.create_binary(probability_map, thr)
 
         is_unusable = image_properties.is_image_too_full(largest_object_mask) or \
                       image_properties.is_image_too_empty(largest_object_mask, 0.1)
 
         if not is_unusable:
-            io_tools.save_processed_probability_images(filename, largest_object_mask, probability_map_upsampled, thr)
-
-
-def setup_and_run_segmentation():
-    io_tools.make_output_sub_dirs()
-    paths = io_tools.get_original_image_paths(ARGS.path_originals, ARGS.condition)
-    model_resource, prediction_pipeline = load_model(ARGS.path_segmentation_model)
-
-    for i_path, p in enumerate(paths):
-
-        logging.info(f'image {i_path}: {p}')
-
-        voxel_size = image_properties.get_voxel_size(p)
-        interpolation_factors = image_properties.get_interpolation_factor(voxel_size, ARGS.default_voxel_size)
-        mesh_pixel_size_pre_interpolation = image_properties.get_mesh_size_in_pixels_pre_interpolation(
-            ARGS.default_mesh_size_in_pixels, interpolation_factors)
-        mesh_size_micron_str = image_properties.get_mesh_size_micron_str(mesh_pixel_size_pre_interpolation,
-                                                                         voxel_size)
-
-        im = io_tools.read_image(p, mesh_pixel_size_pre_interpolation)
-        if isinstance(im, bool):
-            continue
-
-        patches_start_idxs = image_properties.get_patches_start_idxs(im.shape, mesh_pixel_size_pre_interpolation)
-
-        io_tools.image_properties_to_csv(i_path, p, voxel_size, interpolation_factors,
-                                         mesh_pixel_size_pre_interpolation, mesh_size_micron_str,
-                                         patches_start_idxs)
-
-        for i_patch, patch_start_idxs in enumerate(patches_start_idxs):
-
-            patch = image_operations.extract_patch(im, patch_start_idxs, mesh_pixel_size_pre_interpolation)
-
-            if ARGS.is_enhance_contrast:
-                patch = image_operations.enhance_contrast_3d(patch)
-
-            probability_map = predict(patch, model_resource, prediction_pipeline)
-
-            is_unusable = image_properties.is_image_too_empty(probability_map)
-
-            if not is_unusable:
-                io_tools.save_patch_segmentation_images(i_path, i_patch, patch, probability_map)
+            io_tools.save_image(OUTPUT_PATH_PROBABILITY, f'{filename[:-4]}_thr{thr}.tif', largest_object_mask)

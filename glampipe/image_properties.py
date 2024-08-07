@@ -47,7 +47,7 @@ def get_mesh_size_in_pixels_pre_interpolation(default_mesh_size_in_pixels, inter
     return mesh_size_in_pixels_pre_interpolation
 
 
-def get_patches_start_idxs(im_shape, patch_shape):
+def get_tiles_start_idxs(im_shape, patch_shape):
     """
     Calculate the start indices for non-overlapping patches of a given shape within an image.
 

@@ -1,3 +1,5 @@
+from glampipe import create_tiles
+from glampipe import interpolate
 from glampipe import segmentation
 from glampipe import mesh_operations
 from glampipe import prep_diffusion
@@ -7,11 +9,12 @@ from glampipe.config import ARGS
 
 def main():
 
+    if ARGS.is_interpolate:
+        create_tiles.create_tiles_and_save_metadata()
+        interpolate.run_interpolation()
+
     if ARGS.is_segment:
         segmentation.setup_and_run_segmentation()
-
-    if ARGS.is_process_probability:
-        segmentation.run_process_probability()
 
     if ARGS.is_mesh:
         mesh_operations.run_mesh_creation()
