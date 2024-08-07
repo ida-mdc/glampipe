@@ -65,9 +65,8 @@ def get_tiles_start_idxs(im_shape, patch_shape):
     # Calculate the start index for the first dimension so the patch is centered
     z_start = (im_shape[0] - patch_shape[0]) // 2
 
-    # For the second and third dimensions, calculate start indices for valid, non-overlapping patches
-    y_starts = list(range(0, im_shape[1] - patch_shape[1] + 1, patch_shape[1]))
-    x_starts = list(range(0, im_shape[2] - patch_shape[2] + 1, patch_shape[2]))
+    y_starts = list(range(0, im_shape[1] - patch_shape[1] + 1, max(1, patch_shape[1] // 2)))
+    x_starts = list(range(0, im_shape[2] - patch_shape[2] + 1, max(1, patch_shape[2] // 2)))
 
     # Generate tuples of start indices for all valid patches
     patches_start_idxs = [np.asarray([z_start, y, x]) for y in y_starts for x in x_starts]
