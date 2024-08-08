@@ -126,18 +126,12 @@ def save_as_gif(im, filename):
 
 
 def save_image(output_path, filename, image):
-    tif.imsave(os.path.join(output_path, filename), image)
-
-
-def save_processed_probability_images(filename, largest_object_mask, probability_processed, thr):
-    tif.imsave(os.path.join(OUTPUT_PATH_PROBABILITY_PROCESSED, f'{filename}.tif'),
-               probability_processed.astype('float32'))
-    tif.imsave(os.path.join(OUTPUT_PATH_BINARY, f'{filename}_{thr}.tif'), largest_object_mask)
+    tif.imwrite(os.path.join(output_path, filename), image)
 
 
 def save_training_set_image(filename, image):
     image = (image*255).astype(np.uint8)
-    tif.imsave(os.path.join(OUTPUT_PATH_TRAINING_SET, f'{filename}.tif'), image)
+    tif.imwrite(os.path.join(OUTPUT_PATH_TRAINING_SET, f'{filename}.tif'), image)
 
 
 def get_array_as_string(array):
@@ -188,3 +182,13 @@ def get_binary_image(filename):
     binary = tif.imread(binary_path)
     thr = float(binary_path.split('_')[-1][:-4])
     return binary, thr
+
+
+def replace_string_in_file(file_path, old_string, new_string):
+    with open(file_path, 'r') as file:
+        content = file.read()
+
+    content = content.replace(old_string, new_string)
+
+    with open(file_path, 'w') as file:
+        file.write(content)

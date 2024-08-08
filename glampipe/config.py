@@ -31,8 +31,8 @@ def check_args():
                          'as it implies segmentation results already exist.')
     if ARGS.is_interpolate and ARGS.condition is None:
         logging.warning('Condition not provided. Will use all images in the directory.')
-    if ARGS.is_segment and ARGS.path_segmentation_model is None:
-        raise ValueError('Path to segmentation model must be provided when segmenting.')
+    # if ARGS.is_segment and ARGS.path_segmentation_model is None:
+    #     raise ValueError('Path to segmentation model must be provided when segmenting.')
     if not os.path.exists(ARGS.output_base_path):
         raise ValueError('Output path where result dir will be created (or found if segmentation was done)'
                          ' does not exist.')
@@ -40,7 +40,7 @@ def check_args():
         if not os.path.exists(OUTPUT_PATH):
             raise ValueError('Segmentation results base directory does not exist.')
         if not os.path.exists(os.path.join(OUTPUT_PATH_INTERPOLATED)):
-            raise ValueError('interpolated images directory does not exist.')
+            raise ValueError('Interpolated images directory does not exist.')
 
 
 def save_args():
@@ -95,6 +95,9 @@ OUTPUT_PATH_BINARY = os.path.join(OUTPUT_PATH, 'binary')
 OUTPUT_PATH_MESH = os.path.join(OUTPUT_PATH, 'meshes')
 OUTPUT_PATH_TRAINING_SET = os.path.join(OUTPUT_PATH, 'training_set')
 PROPERTIES_FILE = os.path.join(OUTPUT_PATH, 'image_properties.csv')
+
+PLANTSEG_PATH = os.path.join(os.path.expanduser('~'), "miniconda3/envs/glampipe/bin/plantseg")
+PLANTSEG_CONFIG_PATH = os.path.join('glampipe','plantset_config.yaml')
 
 check_args()
 set_logger()
