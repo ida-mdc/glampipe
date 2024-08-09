@@ -159,3 +159,43 @@ def get_histogram_and_max_percentage(im):
 def is_histogram_peak_above_threshold(im):
     _, _, max_percentage = get_histogram_and_max_percentage(im)
     return max_percentage > ARGS.histogram_peak_threshold
+
+
+def get_quarters_xy(array):
+    z, y, x = array.shape
+
+    y_mid = y // 2
+    x_mid = x // 2
+
+    q1 = array[:, :y_mid, :x_mid]
+    q2 = array[:, :y_mid, x_mid:]
+    q3 = array[:, y_mid:, :x_mid]
+    q4 = array[:, y_mid:, x_mid:]
+
+    return q1, q2, q3, q4
+
+
+def get_quarters_zy(array):
+    z, y, x = array.shape
+
+    z_mid = z // 2
+    y_mid = y // 2
+
+    q1 = array[:z_mid, :y_mid, :]
+    q2 = array[z_mid:, :y_mid, :]
+    q3 = array[:z_mid, y_mid:, :]
+    q4 = array[z_mid:, y_mid:, :]
+
+    return q1, q2, q3, q4
+
+
+def is_tile_too_empty(tile):
+    min_n_unique = 30
+    min_max_value = 40
+    for quarter in get_quarters_xy(tile):
+        if np.unique(quarter).size < min_n_unique or np.max(quarter) < min_max_value:
+            return True
+    for quarter in get_quarters_zy(tile):
+        if np.unique(quarter).size < min_n_unique or np.max(quarter) < min_max_value:
+            return True
+    return False

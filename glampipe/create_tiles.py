@@ -35,6 +35,10 @@ def create_tiles_and_save_metadata():
 
             tile = image_operations.extract_tile(im, tile_start_idxs, mesh_pixel_size_pre_interpolation)
 
+            if image_properties.is_tile_too_empty(tile):
+                logging.info(f'Tile {i_path}_{i_tile} is empty-ish. Skipping.')
+                continue
+
             if ARGS.is_enhance_contrast:
                 tile = image_operations.enhance_contrast_3d(tile)
 
