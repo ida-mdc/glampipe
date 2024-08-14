@@ -97,7 +97,8 @@ OUTPUT_PATH_TRAINING_SET = os.path.join(OUTPUT_PATH, 'training_set')
 PROPERTIES_FILE = os.path.join(OUTPUT_PATH, 'image_properties.csv')
 
 PLANTSEG_PATH = os.path.join(os.path.expanduser('~'), "miniconda3/envs/glampipe/bin/plantseg")
-PLANTSEG_CONFIG_PATH = os.path.join('glampipe','plantset_config.yaml')
+PLANTSEG_CONFIG_PACKAGE_PATH = os.path.join('glampipe', 'plantset_config.yaml')
+PLANTSEG_CONFIG_PATH = os.path.join(OUTPUT_PATH, 'plantset_config.yaml')
 
 check_args()
 set_logger()

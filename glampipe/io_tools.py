@@ -1,7 +1,6 @@
 from glob import glob
 import os
 import logging
-from datetime import datetime
 import numpy as np
 import imageio
 import tifffile as tif
@@ -184,11 +183,11 @@ def get_binary_image(filename):
     return binary, thr
 
 
-def replace_string_in_file(file_path, old_string, new_string):
-    with open(file_path, 'r') as file:
+def replace_string_in_file(file_path_in, file_path_out, old_string, new_string):
+    with open(file_path_in, 'r') as file:
         content = file.read()
 
     content = content.replace(old_string, new_string)
 
-    with open(file_path, 'w') as file:
+    with open(file_path_out, 'w') as file:
         file.write(content)

@@ -1,5 +1,5 @@
 # Contains the path to the directory or file to process
-path: /home/ella/work/GLAM/data/glampipe_20240807_emphysema_triangle/interpolated
+path: TEMPLATE_PATH
 
 preprocessing:
   # enable/disable preprocessing

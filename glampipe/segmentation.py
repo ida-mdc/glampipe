@@ -1,5 +1,5 @@
 import subprocess
-from glampipe.config import OUTPUT_PATH_PROBABILITY, OUTPUT_PATH_INTERPOLATED, PLANTSEG_PATH, PLANTSEG_CONFIG_PATH
+from glampipe.config import OUTPUT_PATH_INTERPOLATED, PLANTSEG_PATH, PLANTSEG_CONFIG_PATH, PLANTSEG_CONFIG_PACKAGE_PATH
 from glampipe import io_tools
 
 
@@ -8,7 +8,8 @@ def setup_and_run_segmentation():
     # io_tools.make_output_sub_dir(OUTPUT_PATH_PROBABILITY)
     # paths = io_tools.get_original_image_paths(OUTPUT_PATH_INTERPOLATED, ARGS.condition)
 
-    io_tools.replace_string_in_file(PLANTSEG_CONFIG_PATH, 'TEMPLATE_PATH', OUTPUT_PATH_INTERPOLATED)
+    io_tools.replace_string_in_file(PLANTSEG_CONFIG_PACKAGE_PATH, PLANTSEG_CONFIG_PATH,
+                                    'TEMPLATE_PATH', OUTPUT_PATH_INTERPOLATED)
 
     result = subprocess.run([PLANTSEG_PATH, "--config", PLANTSEG_CONFIG_PATH], capture_output=True, text=True)
 
