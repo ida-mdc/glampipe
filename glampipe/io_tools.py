@@ -2,14 +2,13 @@ from glob import glob
 import os
 import logging
 import numpy as np
-import imageio
 import tifffile as tif
 import pandas as pd
 from glampipe.config import PROPERTIES_FILE
 from glampipe.config import (OUTPUT_PATH,
                              OUTPUT_PATH_BINARY,
                              OUTPUT_PATH_MESH,
-                             OUTPUT_PATH_TRAINING_SET)
+                             OUTPUT_PATH_INTERPOLATED)
 
 
 def make_output_sub_dir(dir_path):
@@ -83,54 +82,8 @@ def get_filename(p, is_extension=True):
     return filename
 
 
-def read_gif(filename):
-    # Read the GIF using imageio
-    gif = imageio.mimread(filename)
-
-    # Process frames to handle different shapes
-    processed_frames = []
-    for frame in gif:
-        if frame.ndim == 2:  # Frame is 2D
-            processed_frames.append(frame)
-        elif len(frame.shape) == 3:  # Frame is 3D
-            processed_frames.append(frame[:, :, 0])  # Take only the first channel (e.g., red channel)
-
-    # Convert the list of frames to a numpy array
-    im = np.stack(processed_frames, axis=0)
-    return im
-
-
-def save_as_gif(im, filename):
-
-    im = (im - im.min()) / (im.max() - im.min())
-    im = (im * 255).astype('uint8')
-
-    file_path = os.path.join(OUTPUT_PATH_TRAINING_SET, f'{filename}.gif')
-    # frames = [im[:, :, i] for i in range(im.shape[2])]
-    frames = [im[i, :, :] for i in range(im.shape[0])]
-
-    # Convert 2D frames to 3D (RGB + Alpha)
-    converted_frames = []
-    for frame in frames:
-        if frame.ndim == 2:  # Checking for 2D frame
-            rgb_frame = np.stack([frame, frame, frame], axis=-1)  # Convert grayscale to RGB
-            alpha_channel = np.ones_like(frame) * 255  # Create an alpha channel
-            rgba_frame = np.dstack((rgb_frame, alpha_channel))  # Add alpha channel
-            converted_frames.append(rgba_frame)
-        else:
-            logging.error('frame should be 2D at this stage.')
-            # converted_frames.append(frame)  # If already 3D, use as is
-
-    imageio.mimsave(file_path, converted_frames, format='GIF')
-
-
 def save_image(output_path, filename, image):
     tif.imwrite(os.path.join(output_path, filename), image)
-
-
-def save_training_set_image(filename, image):
-    image = (image*255).astype(np.uint8)
-    tif.imwrite(os.path.join(OUTPUT_PATH_TRAINING_SET, f'{filename}.tif'), image)
 
 
 def get_array_as_string(array):
@@ -191,3 +144,7 @@ def replace_string_in_file(file_path_in, file_path_out, old_string, new_string):
 
     with open(file_path_out, 'w') as file:
         file.write(content)
+
+
+def get_probability_image_paths():
+    return glob(os.path.join(OUTPUT_PATH_INTERPOLATED, '*', 'PostProcessing', '*.tiff'))
