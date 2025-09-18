@@ -1,12 +1,9 @@
-# tests/test_mesh.py
 from pathlib import Path
 import numpy as np
 from tifffile import imread, imwrite
 from scipy.ndimage import gaussian_filter
-from shutil import rmtree
 
-def test_prob_binary_and_mesh(gp_cfg):
-    rmtree(Path(gp_cfg.OUTPUT_PATH_ORIGINAL), ignore_errors=True)  # <-- add
+def test_prob_binary_and_mesh(gp_cfg, clean_run_dir):
 
     from glampipe.create_tiles import create_tiles_and_save_metadata
     from glampipe.interpolate import run_interpolation
@@ -37,7 +34,6 @@ def test_prob_binary_and_mesh(gp_cfg):
     thr = 80.0
     bin_ = create_binary(prob, thr)
 
-    # ensure output dirs exist
     Path(gp_cfg.OUTPUT_PATH_PROBABILITY).mkdir(parents=True, exist_ok=True)
     Path(gp_cfg.OUTPUT_PATH_BINARY).mkdir(parents=True, exist_ok=True)
     Path(gp_cfg.OUTPUT_PATH_MESH).mkdir(parents=True, exist_ok=True)

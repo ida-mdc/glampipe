@@ -1,11 +1,9 @@
 from tifffile import imread
-from shutil import rmtree
 from pathlib import Path
 import pytest
 
 def test_interpolation_final_shape(gp_cfg):
 
-    rmtree(Path(gp_cfg.OUTPUT_PATH_ORIGINAL), ignore_errors=True)  # <-- add
     # Import AFTER gp_cfg has set sys.argv & reloaded glampipe.config
     from glampipe.create_tiles import create_tiles_and_save_metadata
     from glampipe.interpolate import run_interpolation
