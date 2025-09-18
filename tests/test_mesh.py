@@ -3,8 +3,11 @@ from pathlib import Path
 import numpy as np
 from tifffile import imread, imwrite
 from scipy.ndimage import gaussian_filter
+from shutil import rmtree
 
 def test_prob_binary_and_mesh(gp_cfg):
+    rmtree(Path(gp_cfg.OUTPUT_PATH_ORIGINAL), ignore_errors=True)  # <-- add
+
     from glampipe.create_tiles import create_tiles_and_save_metadata
     from glampipe.interpolate import run_interpolation
     from glampipe.image_operations import create_binary

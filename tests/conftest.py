@@ -42,7 +42,6 @@ def gp_cfg(tmp_path, toy_data, monkeypatch):
     monkeypatch.setenv("PYTHONHASHSEED", "0")  # stability
     monkeypatch.setattr(sys, "argv", argv, raising=False)
 
-    # Import and reload to re-parse args with our fake argv
     import glampipe.config as cfg
     importlib.reload(cfg)
     return cfg

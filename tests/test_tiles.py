@@ -1,8 +1,10 @@
 from pathlib import Path
+from shutil import rmtree
 import pytest
 
 
 def test_tiles_and_metadata(gp_cfg):
+    rmtree(Path(gp_cfg.OUTPUT_PATH_ORIGINAL), ignore_errors=True)
     from glampipe.create_tiles import create_tiles_and_save_metadata
     create_tiles_and_save_metadata()
     # Expect at least one tile and a CSV in the run directory
